@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express'
 import cors from 'cors'
-import { db } from './database/knex'
+import { UserDatabase } from './database/UserDatabase'
+
 
 const app = express()
 
@@ -13,8 +14,11 @@ app.listen(3003, () => {
 
 app.get("/usersTest", async (req: Request, res: Response) => {
     try {
-        const results = await db("users")
-        res.status(200).send({ message: results })
+        const userDataBase =  new UserDatabase()
+        const output = await userDataBase.findUsers()
+        
+        console.log(output)
+        res.status(200).send({ message: output })
 
 
     } catch (error) {
