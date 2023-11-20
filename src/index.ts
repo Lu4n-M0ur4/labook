@@ -1,5 +1,7 @@
 import express, { Request, Response } from 'express'
 import cors from 'cors'
+import { UserDatabase } from './database/UserDatabase'
+
 
 const app = express()
 
@@ -10,9 +12,15 @@ app.listen(3003, () => {
     console.log(`Servidor rodando na porta ${3003}`)
 })
 
-app.get("/ping", async (req: Request, res: Response) => {
+app.get("/usersTest", async (req: Request, res: Response) => {
     try {
-        res.status(200).send({ message: "Pong!" })
+        const userDataBase =  new UserDatabase()
+        const output = await userDataBase.findUsers()
+        
+        console.log(output)
+        res.status(200).send({ message: output })
+
+
     } catch (error) {
         console.log(error)
 
