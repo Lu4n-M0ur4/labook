@@ -14,10 +14,12 @@ app.listen(3003, () => {
 
 app.get("/usersTest", async (req: Request, res: Response) => {
     try {
-        const userDataBase =  new UserDatabase()
-        const output = await userDataBase.findUsers()
+
+        const userDatabase = new UserDatabase()
+        const output =  await userDatabase.findUsers()
+       
         
-        console.log(output)
+       
         res.status(200).send({ message: output })
 
 
