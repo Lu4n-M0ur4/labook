@@ -1,9 +1,14 @@
+export enum USER_ROLES {
+  NORMAL = "NORMAL",
+  ADMIN = "ADMIN",
+}
+
 export interface UserDB {
   id: string;
   name: string;
   email: string;
   password: string;
-  role: string;
+  role: USER_ROLES;
   created_at: string;
 }
 
@@ -22,7 +27,7 @@ export class User {
     private name: string,
     private email: string,
     private password: string,
-    private role: string,
+    private role: USER_ROLES,
     private createdAt: string
   ) {}
 
@@ -56,11 +61,11 @@ export class User {
     this.password = value;
   }
 
-  public getRole(): string {
+  public getRole(): USER_ROLES {
     return this.role;
   }
 
-  public setRole(value: string): void {
+  public setRole(value: USER_ROLES): void {
     this.role = value;
   }
 
@@ -71,4 +76,18 @@ export class User {
   public setCreatedAt(value: string): void {
     this.createdAt = value;
   }
+
+  public toDBModel(): UserDB {
+    return {
+      id: this.id,
+      name: this.name,
+      email: this.email,
+      password: this.password,
+      role: this.role,
+      created_at: this.createdAt,
+    };
+  }
+
+
+
 }

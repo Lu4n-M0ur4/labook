@@ -1,4 +1,4 @@
--- Active: 1700574792135@@127.0.0.1@3306
+-- Active: 1700706250932@@127.0.0.1@3306
 
 CREATE TABLE
     users (
@@ -43,7 +43,7 @@ VALUES (
         'Fulano',
         'fulano@email.com',
         'fulano123',
-        'token123',
+        'NORMAL',
         '2023-10-16T12:00:0.000Z'
     ),
     (
@@ -51,7 +51,7 @@ VALUES (
         'Beltrana',
         'beltrana@email.com',
         'beltrana00',
-        'token123',
+        'NORMAL',
         '2023-11-16T12:00:0.000Z'
     );
 
@@ -85,4 +85,4 @@ VALUES (
 
 SELECT * FROM posts;
 
-DROP Table posts;
+DROP Table likes_dislikes;
