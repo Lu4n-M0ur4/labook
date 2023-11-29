@@ -10,5 +10,17 @@ export class UserDatabase extends BaseDatabase {
     );
 
     return usersDB;
-  };
+  };  
+
+  public insertUser = async (newUserDB:UserDB):Promise<void>=>{
+      await BaseDatabase
+      .connection(UserDatabase.TABLE_USERS)
+      .insert(newUserDB)
+  }
+
+
+
 }
+
+
+
