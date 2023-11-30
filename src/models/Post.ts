@@ -1,4 +1,4 @@
-export interface PostDb {
+export interface PostDB {
   id: string;
   creator_id: string;
   content: string;
