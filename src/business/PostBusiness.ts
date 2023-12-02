@@ -1,11 +1,18 @@
 import { PostDatabase } from "../database/PostDatabase";
-import { CreatePostInputDTO, CreatePostsOutputDTO } from "../dtos/posts/createPost.dto";
+import {
+  CreatePostInputDTO,
+  CreatePostsOutputDTO,
+} from "../dtos/posts/createPost.dto";
+import {
+  UpdadePostsOutputDTO,
+  UpdatePostInputDTO,
+} from "../dtos/posts/updatePost.dto copy";
 import {
   GetPostsInputDTO,
   getPostsOutputDTO,
 } from "../dtos/posts/getPosts.dto";
 import { BadRequestError } from "../errors/BadRequestError";
-import { Post, PostModel } from "../models/Post";
+import { Post, PostDB, PostModel } from "../models/Post";
 import { IdGenerator } from "../services/IdGenerator";
 import { TokenManager } from "../services/TokenManager";
 
@@ -81,8 +88,8 @@ export class PostBusiness {
         postAndCreatorName.updated_at,
         postAndCreatorName.creator_name
       );
-        console.log(post.getCreatorName());
-        
+      console.log(post.getCreatorName());
+
       const result: PostModel = {
         id: post.getId(),
         content: post.getContent(),
@@ -98,6 +105,54 @@ export class PostBusiness {
       return result;
     });
 
-    return postsModel
+    return postsModel;
+  };
+
+  public editPost = async (
+    input: UpdatePostInputDTO
+  ): Promise<UpdadePostsOutputDTO> => {
+    const { content, token, idToEdit } = input;
+
+    const payload = this.tokenManager.getPayload(token);
+
+    if (!payload) {
+      throw new BadRequestError();
+    }
+
+    const postDB = await this.postDatabase.getPostById(idToEdit);
+
+    if (!postDB) {
+      throw new BadRequestError("Post com essa id não existe");
+    }
+    console.log("meuconsole", postDB);
+
+    const post = new Post(
+      postDB.id,
+      postDB.creator_id,
+      postDB.content,
+      postDB.likes,
+      postDB.dislikes,
+      postDB.created_at,
+      new Date().toISOString(),
+      payload.name
+    );
+
+    post.setContent(content);
+
+    const newPostDB: PostDB = {
+      id: post.getId(),
+      creator_id: post.getCreatorId(),
+      content: post.getContent(),
+      likes: post.getLikes(),
+      dislikes: post.getDislikes(),
+      created_at: post.getCreatedAt(),
+      updated_at: post.getUpdatedAt(),
+    };
+
+    await this.postDatabase.updatePost(newPostDB);
+
+    const output: CreatePostsOutputDTO = undefined;
+
+    return output;
   };
 }

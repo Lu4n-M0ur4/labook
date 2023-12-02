@@ -10,8 +10,9 @@ export class PostDatabase extends BaseDatabase {
   };
 
   public getPostsAndCreator = async (): Promise<PostDBAndCreator[]> => {
-    const postsDB: PostDBAndCreator[] =
-      await BaseDatabase.connection(PostDatabase.TABLE_POST)
+    const postsDB: PostDBAndCreator[] = await BaseDatabase.connection(
+      PostDatabase.TABLE_POST
+    )
       .select(
         `${PostDatabase.TABLE_POST}.id`,
         `${PostDatabase.TABLE_POST}.creator_id`,
@@ -21,17 +22,37 @@ export class PostDatabase extends BaseDatabase {
         `${PostDatabase.TABLE_POST}.created_at`,
         `${PostDatabase.TABLE_POST}.updated_at`,
         `${UserDatabase.TABLE_USERS}.name as creator_name`
-        
-        )
-        .join(
-          `${UserDatabase.TABLE_USERS}`,
-          `${PostDatabase.TABLE_POST}.creator_id`,
-          "=",
-          `${UserDatabase.TABLE_USERS}.id`,
+      )
+      .join(
+        `${UserDatabase.TABLE_USERS}`,
+        `${PostDatabase.TABLE_POST}.creator_id`,
+        "=",
+        `${UserDatabase.TABLE_USERS}.id`
       );
-console.log(postsDB);
+    console.log(postsDB);
 
+    return postsDB;
+  };
 
-    return postsDB ;
+  public editPost = async (postToEdit: PostDB): Promise<void> => {
+    await BaseDatabase.connection(PostDatabase.TABLE_POST)
+      .update(postToEdit)
+      .where({ id: postToEdit.id });
+  };
+
+  public getPostById = async (
+    tokenPayloadId: string
+  ): Promise<PostDB | undefined> => {
+    const [result] = await BaseDatabase.connection(
+      PostDatabase.TABLE_POST
+    ).where({ id: tokenPayloadId });
+
+    return result as PostDB | undefined;
+  };
+
+  public updatePost = async (newPostDB: PostDB): Promise<void> => {
+    await BaseDatabase.connection(PostDatabase.TABLE_POST)
+      .where({ id: newPostDB.id })
+      .update(newPostDB);
   };
 }

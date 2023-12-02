@@ -48,7 +48,7 @@ export class UserController {
       }
     }
   };
-  public loguin = async (req: Request, res: Response) => {
+  public login = async (req: Request, res: Response) => {
     try {
       const input = LoginSchema.parse({
         email: req.body.email,
