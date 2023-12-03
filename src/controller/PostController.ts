@@ -4,7 +4,9 @@ import { BaseError } from "../errors/BaseError";
 import { GetPostSchema } from "../dtos/posts/getPosts.dto";
 import { Request, Response } from "express";
 import { CreatePostSchema } from "../dtos/posts/createPost.dto";
-import { UpdadePostSchema } from "../dtos/posts/updatePost.dto copy";
+import { UpdadePostSchema } from "../dtos/posts/updatePost.dto";
+import { DeletePostSchema } from "../dtos/posts/delePost.dto";
+import { likeOrDislikeSchema } from "../dtos/posts/likeOrDislikePost.dto";
 
 export class PostController {
   constructor(private postBusiness: PostBusiness) {}
@@ -55,7 +57,6 @@ export class PostController {
     }
   };
 
-
   public editPost  = async (req: Request, res: Response) => {
     try {
       const input = UpdadePostSchema.parse({
@@ -65,6 +66,58 @@ export class PostController {
       });
 
       const output = await this.postBusiness.editPost(input);
+
+      res.status(201).send(output);
+    } catch (error) {
+      console.log(error);
+
+      if (error instanceof ZodError) {
+        res.status(400).send(error.issues);
+      } else if (error instanceof BaseError) {
+        res.status(error.statusCode).send(error.message);
+      } else {
+        res.status(500).send("Erro inesperado");
+      }
+    }
+  };
+
+  public deletePost = async (req: Request, res: Response) => {
+    try {
+      const input = DeletePostSchema.parse({
+        token: req.headers.authorization,
+        idToDelete: req.params.id
+      });
+
+      console.log(input.idToDelete);
+      
+
+      const output = await this.postBusiness.deletePost(input);
+
+      res.status(201).send(output);
+    } catch (error) {
+      console.log(error);
+
+      if (error instanceof ZodError) {
+        res.status(400).send(error.issues);
+      } else if (error instanceof BaseError) {
+        res.status(error.statusCode).send(error.message);
+      } else {
+        res.status(500).send("Erro inesperado");
+      }
+    }
+  };
+
+  public likeOrDislikePost = async (req: Request, res: Response) => {
+    try {
+      const input = likeOrDislikeSchema.parse({
+        token: req.headers.authorization,
+        postId: req.params.id,
+        like:req.body.like
+      });
+
+      
+
+      const output = await this.postBusiness.likeOrDislikePost(input);
 
       res.status(201).send(output);
     } catch (error) {

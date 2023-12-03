@@ -40,6 +40,12 @@ export interface LikeDislikeDB {
   like: number;
 }
 
+
+export enum PLAYLIST_LIKE {
+  ALREADY_LIKED = "ALREADY LIKED",
+  ALREADY_DISLIKED = "ALREADY DISLIKED"
+}
+
 export class Post {
   constructor(
     private id: string,
@@ -112,4 +118,22 @@ export class Post {
   public setCreatorName(value: string): void {
     this.creatorName = value;
   }
+
+  public addLike = (): void => {
+    this.likes++
+  }
+
+  public removeLike = (): void => {
+    this.likes--
+  }
+
+  public addDislike = (): void => {
+    this.dislikes++
+  }
+
+  public removeDislike = (): void => {
+    this.dislikes--
+  }
+
+
 }

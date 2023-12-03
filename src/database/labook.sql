@@ -84,5 +84,6 @@ VALUES (
     UPDATE posts SET dislikes = 1 WHERE id = 'p002';
 
 SELECT * FROM posts;
+SELECT * FROM likes_dislikes;
 
 DROP Table likes_dislikes;
