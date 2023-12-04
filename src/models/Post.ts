@@ -1,4 +1,4 @@
-export interface PostDb {
+export interface PostDB {
   id: string;
   creator_id: string;
   content: string;
@@ -8,20 +8,42 @@ export interface PostDb {
   updated_at: string;
 }
 
-export interface PostModel {
+export interface PostDBAndCreator { 
   id: string;
   creator_id: string;
   content: string;
   likes: number;
   dislikes: number;
+  created_at: string;
+  updated_at: string;
+  creator_name:string;
+}
+
+
+export interface PostModel {
+  id: string;
+  content: string;
+  likes: number;
+  dislikes: number;
   createdAt: string;
   updatedAt: string;
+  creator:{
+    id:string;
+    name:string;
+  }
 }
+
 
 export interface LikeDislikeDB {
   user_id: string;
   post_id: string;
   like: number;
+}
+
+
+export enum PLAYLIST_LIKE {
+  ALREADY_LIKED = "ALREADY LIKED",
+  ALREADY_DISLIKED = "ALREADY DISLIKED"
 }
 
 export class Post {
@@ -32,9 +54,12 @@ export class Post {
     private likes: number,
     private dislikes: number,
     private createdAt: string,
-    private updatedAt: string
+    private updatedAt: string,
+    private creatorName:string
   ) {}
 
+
+    
   public getId(): string {
     return this.id;
   }
@@ -85,4 +110,30 @@ export class Post {
   public setUpdatedAt(value: string): void {
     this.createdAt = value;
   }
+
+  public getCreatorName(): string {
+    return this.creatorName;
+  }
+
+  public setCreatorName(value: string): void {
+    this.creatorName = value;
+  }
+
+  public addLike = (): void => {
+    this.likes++
+  }
+
+  public removeLike = (): void => {
+    this.likes--
+  }
+
+  public addDislike = (): void => {
+    this.dislikes++
+  }
+
+  public removeDislike = (): void => {
+    this.dislikes--
+  }
+
+
 }

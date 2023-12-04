@@ -1,7 +1,11 @@
 import { UserDatabase } from "../database/UserDatabase";
-import { GetUsersOutputDTO } from "../dtos/users/getUsers.dto";
+import { GetUsersInputDTO, GetUsersOutputDTO } from "../dtos/users/getUsers.dto";
+import { LoguinInputDTO, LoguinOutputDTO } from "../dtos/users/login.dto";
 import { SignupInputDTO, SignupOutputDTO } from "../dtos/users/signup.dto";
+import { BadRequestError } from "../errors/BadRequestError";
+import { NotFoundError } from "../errors/NotFoundError";
 import { USER_ROLES, User, UserDB, UserModel } from "../models/User";
+import { HashManager } from "../services/HashManager";
 import { IdGenerator } from "../services/IdGenerator";
 import { TokenManager, TokenPayload } from "../services/TokenManager";
 
@@ -9,10 +13,20 @@ export class UserBusiness {
   constructor(
     private userDatabase: UserDatabase,
     private idGenerator: IdGenerator,
-    private tokenManager: TokenManager
+    private tokenManager: TokenManager,
+    private hashManager: HashManager
   ) {}
 
-  public findUsers = async (): Promise<GetUsersOutputDTO> => {
+  public findUsers = async (input:GetUsersInputDTO): Promise<GetUsersOutputDTO> => {
+    const { token } = input;
+
+    const payload = this.tokenManager.getPayload(token);
+
+    
+    if (!payload || payload.role !== USER_ROLES.ADMIN) {
+      throw new BadRequestError("Somente administradores podem acessar!!!");
+    }
+    
     const usersDB = await this.userDatabase.findUsers();
 
     const users = usersDB.map((userDB) => {
@@ -29,7 +43,6 @@ export class UserBusiness {
         id: user.getId(),
         name: user.getName(),
         email: user.getEmail(),
-        password: user.getPassword(),
         role: user.getRole(),
         createdAt: user.getCreatedAt(),
       };
@@ -43,13 +56,15 @@ export class UserBusiness {
   public signup = async (input: SignupInputDTO): Promise<SignupOutputDTO> => {
     const { name, email, password } = input;
 
+    const hashedPassword = await this.hashManager.hash(password);
+
     const id = this.idGenerator.generate();
 
     const newUser = new User(
       id,
       name,
       email,
-      password,
+      hashedPassword,
       USER_ROLES.NORMAL,
       new Date().toISOString()
     );
@@ -65,6 +80,45 @@ export class UserBusiness {
     const token = this.tokenManager.createToken(payload);
 
     const output: SignupOutputDTO = {
+      token,
+    };
+
+    return output;
+  };
+  public loguin = async (input: LoguinInputDTO): Promise<LoguinOutputDTO> => {
+    const { email, password } = input;
+
+    const userDB = await this.userDatabase.findUsersByEmail(email);
+
+    if (!userDB) {
+      throw new NotFoundError("'email' ou 'senha' incorretos");
+    }
+
+    const hashedPassword = userDB.password;
+    const isPassword = await this.hashManager.compare(password, hashedPassword);
+
+    if (!isPassword) {
+      throw new NotFoundError("'email' ou 'senha' incorretos");
+    }
+    
+    const user = new User(
+      userDB.id,
+      userDB.name,
+      userDB.email,
+      userDB.password,
+      userDB.role,
+      userDB.created_at
+    );
+
+    const tokenPayload: TokenPayload = {
+      id: user.getId(),
+      name: user.getName(),
+      role: user.getRole(),
+    };
+
+    const token = this.tokenManager.createToken(tokenPayload);
+
+    const output: LoguinOutputDTO = {
       token,
     };
 

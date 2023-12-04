@@ -1,13 +1,15 @@
 import { z } from "zod"
 import { PostModel } from "../../models/Post"
 
-export interface GetVideosInputDTO { 
-    nameToSearch?: string
+
+export interface GetPostsInputDTO { 
+    token: string
 }
 
-export type GetPostsOutputDTO = PostModel[]
+export type getPostsOutputDTO = PostModel[]
 
 export const GetPostSchema = z.object({
-    nameToSearch: z.string().min(1).optional()
-  }).transform(data => data as GetVideosInputDTO)
+    token:z.string().min(1)
+
+  }).transform(data => data as GetPostsInputDTO)
 
