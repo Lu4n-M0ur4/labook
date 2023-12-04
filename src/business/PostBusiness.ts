@@ -12,7 +12,13 @@ import {
   getPostsOutputDTO,
 } from "../dtos/posts/getPosts.dto";
 import { BadRequestError } from "../errors/BadRequestError";
-import { LikeDislikeDB, PLAYLIST_LIKE, Post, PostDB, PostModel } from "../models/Post";
+import {
+  LikeDislikeDB,
+  PLAYLIST_LIKE,
+  Post,
+  PostDB,
+  PostModel,
+} from "../models/Post";
 import { IdGenerator } from "../services/IdGenerator";
 import { TokenManager } from "../services/TokenManager";
 import {
@@ -24,6 +30,9 @@ import {
   LikeOrDislikePostInputDTO,
   LikeOrDislikePostOutputDTO,
 } from "../dtos/posts/likeOrDislikePost.dto";
+
+
+
 
 export class PostBusiness {
   constructor(
@@ -97,7 +106,6 @@ export class PostBusiness {
         postAndCreatorName.updated_at,
         postAndCreatorName.creator_name
       );
-      
 
       const result: PostModel = {
         id: post.getId(),
@@ -135,7 +143,7 @@ export class PostBusiness {
     }
 
     if (payload.id !== postDB.creator_id) {
-      throw new BadRequestError("Somente o criador deste post pode editá-lo");
+      throw new BadRequestError("Somente o criador do post pode excluir o mesmo!!!");
     }
 
     const post = new Post(
@@ -205,100 +213,86 @@ export class PostBusiness {
   ): Promise<LikeOrDislikePostOutputDTO> => {
     const { token, like, postId } = input;
 
-
     const payload = this.tokenManager.getPayload(token);
-    
+
     if (!payload) {
       throw new BadRequestError();
     }
-    
-    
-    
-    const postDBForCreator = await this.postDatabase.findPostAndCreatorById(postId)
-    
 
-    if(payload.id === postDBForCreator?.creator_id){
-      throw new BadRequestError("Você não pode curtir ou descurtir o próprio post!!! ")
+    const postDBForCreator = await this.postDatabase.findPostAndCreatorById(
+      postId
+    );
+
+    if (payload.id === postDBForCreator?.creator_id) {
+      throw new BadRequestError(
+        "Você não pode curtir ou descurtir o próprio post!!! "
+      );
     }
-    
-    if(!postDBForCreator){
-      throw new BadRequestError('Post com este ID não existe')
-      
+
+    if (!postDBForCreator) {
+      throw new BadRequestError("Post com este ID não existe");
     }
-    
+
     const post = new Post(
-       postDBForCreator.id,
-       postDBForCreator.creator_id,
-       postDBForCreator.content,
-       postDBForCreator.likes,
-       postDBForCreator.dislikes,
-       postDBForCreator.created_at,
-       new Date().toISOString(),
-       postDBForCreator.creator_name
-       )
-       console.log(postDBForCreator)
-       
-    const likeSQlite = like ? 1: 0 
+      postDBForCreator.id,
+      postDBForCreator.creator_id,
+      postDBForCreator.content,
+      postDBForCreator.likes,
+      postDBForCreator.dislikes,
+      postDBForCreator.created_at,
+      new Date().toISOString(),
+      postDBForCreator.creator_name
+    );
 
-    const likeDislikeDB:LikeDislikeDB = {
-      user_id:payload.id ,
-      post_id:postId ,
-      like:likeSQlite
-    }
-    
+    const likeSQlite = like ? 1 : 0;
 
+    const likeDislikeDB: LikeDislikeDB = {
+      user_id: payload.id,
+      post_id: postId,
+      like: likeSQlite,
+    };
 
-    const likeDislikeExist  = await this.postDatabase.findLikeDislike(likeDislikeDB) 
+    const likeDislikeExist = await this.postDatabase.findLikeDislike(
+      likeDislikeDB
+    );
 
-
-    if(likeDislikeExist === PLAYLIST_LIKE.ALREADY_LIKED){
-      if(like){
-        await this.postDatabase.deleteLikeDislike(likeDislikeDB)
-        post.removeLike()
-      }else {
-        await this.postDatabase.updateLikeDislike(likeDislikeDB)
-        post.removeLike()
-        post.addDislike()
+    if (likeDislikeExist === PLAYLIST_LIKE.ALREADY_LIKED) {
+      if (like) {
+        await this.postDatabase.deleteLikeDislike(likeDislikeDB);
+        post.removeLike();
+      } else {
+        await this.postDatabase.updateLikeDislike(likeDislikeDB);
+        post.removeLike();
+        post.addDislike();
       }
-      
-    }else if(likeDislikeExist === PLAYLIST_LIKE.ALREADY_DISLIKED){
-      if(!like){
-        await this.postDatabase.deleteLikeDislike(likeDislikeDB)
-        post.removeDislike()
-      }else{
-        await this.postDatabase.updateLikeDislike(likeDislikeDB)
-        post.removeDislike()
-        post.addLike()
-
+    } else if (likeDislikeExist === PLAYLIST_LIKE.ALREADY_DISLIKED) {
+      if (!like) {
+        await this.postDatabase.deleteLikeDislike(likeDislikeDB);
+        post.removeDislike();
+      } else {
+        await this.postDatabase.updateLikeDislike(likeDislikeDB);
+        post.removeDislike();
+        post.addLike();
       }
-    }else{
-      await this.postDatabase.insertLikeDislike(likeDislikeDB)
-      like ? post.addLike(): post.addDislike()
+    } else {
+      await this.postDatabase.insertLikeDislike(likeDislikeDB);
+      like ? post.addLike() : post.addDislike();
     }
 
+    const updatePostLikeOrDislike: PostDB = {
+      id: post.getId(),
+      creator_id: post.getCreatorId(),
+      content: post.getContent(),
+      likes: post.getLikes(),
+      dislikes: post.getDislikes(),
+      created_at: post.getCreatedAt(),
+      updated_at: post.getUpdatedAt(),
+    };
 
-
-    const updatePostLikeOrDislike:PostDB ={
-      id:post.getId(),
-      creator_id:post.getCreatorId(),
-      content:post.getContent(),
-      likes:post.getLikes(),
-      dislikes:post.getDislikes(),
-      created_at:post.getCreatedAt(),
-      updated_at:post.getUpdatedAt()
-      
-    }
-    
-
-    console.log(updatePostLikeOrDislike)
     await this.postDatabase.updatePost(updatePostLikeOrDislike);
 
+    const output: LikeOrDislikePostOutputDTO = undefined;
 
-    const output:LikeOrDislikePostOutputDTO = undefined
-
-
-    return output
-
-  
+    return output;
   };
 }

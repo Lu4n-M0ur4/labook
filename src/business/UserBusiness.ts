@@ -1,7 +1,8 @@
 import { UserDatabase } from "../database/UserDatabase";
-import { GetUsersOutputDTO } from "../dtos/users/getUsers.dto";
+import { GetUsersInputDTO, GetUsersOutputDTO } from "../dtos/users/getUsers.dto";
 import { LoguinInputDTO, LoguinOutputDTO } from "../dtos/users/login.dto";
 import { SignupInputDTO, SignupOutputDTO } from "../dtos/users/signup.dto";
+import { BadRequestError } from "../errors/BadRequestError";
 import { NotFoundError } from "../errors/NotFoundError";
 import { USER_ROLES, User, UserDB, UserModel } from "../models/User";
 import { HashManager } from "../services/HashManager";
@@ -16,7 +17,16 @@ export class UserBusiness {
     private hashManager: HashManager
   ) {}
 
-  public findUsers = async (): Promise<GetUsersOutputDTO> => {
+  public findUsers = async (input:GetUsersInputDTO): Promise<GetUsersOutputDTO> => {
+    const { token } = input;
+
+    const payload = this.tokenManager.getPayload(token);
+
+    
+    if (!payload || payload.role !== USER_ROLES.ADMIN) {
+      throw new BadRequestError("Somente administradores podem acessar!!!");
+    }
+    
     const usersDB = await this.userDatabase.findUsers();
 
     const users = usersDB.map((userDB) => {
@@ -33,7 +43,6 @@ export class UserBusiness {
         id: user.getId(),
         name: user.getName(),
         email: user.getEmail(),
-        password: user.getPassword(),
         role: user.getRole(),
         createdAt: user.getCreatedAt(),
       };

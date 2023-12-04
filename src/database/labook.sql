@@ -1,4 +1,4 @@
--- Active: 1701212705167@@127.0.0.1@3306
+-- Active: 1701695215763@@127.0.0.1@3306
 
 CREATE TABLE
     users (
@@ -84,6 +84,7 @@ VALUES (
     UPDATE posts SET dislikes = 1 WHERE id = 'p002';
 
 SELECT * FROM posts;
+SELECT* FROM users;
 SELECT * FROM likes_dislikes;
 
 DROP Table likes_dislikes;

@@ -4,13 +4,19 @@ import { BaseError } from "../errors/BaseError";
 import { UserBusiness } from "../business/UserBusiness";
 import { SignupSchema } from "../dtos/users/signup.dto";
 import { LoginSchema } from "../dtos/users/login.dto";
+import { GetUsersSchema } from "../dtos/users/getUsers.dto";
 
 export class UserController {
   constructor(private userBusiness: UserBusiness) {}
 
   public findUsers = async (req: Request, res: Response) => {
     try {
-      const output = await this.userBusiness.findUsers();
+      const input = GetUsersSchema.parse({
+        token: req.headers.authorization,
+      }) 
+
+
+      const output = await this.userBusiness.findUsers(input);
 
       res.status(200).send(output);
     } catch (error) {
