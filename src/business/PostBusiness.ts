@@ -143,7 +143,7 @@ export class PostBusiness {
     }
 
     if (payload.id !== postDB.creator_id) {
-      throw new BadRequestError("Somente o criador do post pode excluir o mesmo!!!");
+      throw new BadRequestError("Somente o criador do post pode editar o mesmo!!!");
     }
 
     const post = new Post(
@@ -196,7 +196,7 @@ export class PostBusiness {
     if (payload.id !== USER_ROLES.ADMIN) {
       if (payload.id !== postDB.creator_id) {
         throw new BadRequestError(
-          "Somente quem criou a playlist pode editá-la"
+          "Somente quem criou o post pode excluí-lo"
         );
       }
     }
